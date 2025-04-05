@@ -1,108 +1,146 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Container,
   Box,
+  Container,
   Typography,
   TextField,
   Button,
   Link,
-  Alert,
   Paper,
+  InputAdornment,
+  IconButton,
+  Alert,
 } from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  Login as LoginIcon,
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion(Box);
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const { login, error } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    const result = await login(email, password);
+    setLoading(true);
+    const result = await login(formData.email, formData.password);
+    setLoading(false);
     if (result.success) {
       navigate('/');
-    } else {
-      setError(result.error);
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
+    <Container maxWidth="sm">
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         sx={{
-          marginTop: 8,
+          minHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4,
         }}
       >
         <Paper
-          elevation={3}
+          elevation={0}
           sx={{
-            padding: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
+            p: { xs: 3, sm: 4 },
+            borderRadius: 4,
+            bgcolor: 'background.paper',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Sign in to Train Reservation
-          </Typography>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Welcome Back
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Sign in to your account to continue
+            </Typography>
+          </Box>
+
           {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+
+          <form onSubmit={handleSubmit}>
             <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
               margin="normal"
               required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
               autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              sx={{ mb: 2 }}
             />
             <TextField
+              fullWidth
+              label="Password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={formData.password}
+              onChange={handleChange}
               margin="normal"
               required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              sx={{ mb: 3 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button
-              type="submit"
               fullWidth
               variant="contained"
+              type="submit"
               size="large"
-              sx={{ mb: 2 }}
+              disabled={loading}
+              startIcon={<LoginIcon />}
+              sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
+          </form>
+
+          <Box sx={{ textAlign: 'center', mt: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              Don't have an account?{' '}
+              <Link component={RouterLink} to="/register" color="primary">
+                Sign up
               </Link>
-            </Box>
+            </Typography>
           </Box>
         </Paper>
-      </Box>
+      </MotionBox>
     </Container>
   );
 };

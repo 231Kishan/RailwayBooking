@@ -1,115 +1,251 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Container,
   Box,
+  Container,
   Typography,
-  Button,
   Grid,
-  Paper,
   Card,
   CardContent,
-  CardActions,
+  Button,
+  TextField,
+  MenuItem,
+  Paper,
+  Stepper,
+  Step,
+  StepLabel,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
-import TrainIcon from '@mui/icons-material/Train';
-import EventSeatIcon from '@mui/icons-material/EventSeat';
-import HistoryIcon from '@mui/icons-material/History';
+import {
+  Train as TrainIcon,
+  CalendarToday as CalendarIcon,
+  LocationOn as LocationIcon,
+  People as PeopleIcon,
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion(Box);
+const MotionCard = motion(Card);
+
+const steps = ['Select Journey', 'Choose Seats', 'Confirm Booking'];
 
 const Dashboard = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(0);
+  const [formData, setFormData] = useState({
+    from: '',
+    to: '',
+    date: '',
+    passengers: 1,
+  });
+
+  const stations = [
+    'Mumbai Central',
+    'Delhi Junction',
+    'Chennai Central',
+    'Kolkata Howrah',
+    'Bangalore City',
+    'Hyderabad Deccan',
+  ];
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleNext = () => {
+    if (activeStep === steps.length - 1) {
+      navigate('/book-seats', { state: formData });
+    } else {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 4 }}>
+    <Container maxWidth="lg">
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        sx={{ py: 4 }}
+      >
         <Typography variant="h4" component="h1" gutterBottom>
-          Welcome, {user?.name}!
+          Book Your Journey
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Manage your train reservations and bookings
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          Plan your trip with ease and comfort
         </Typography>
-      </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <TrainIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6" component="h2">
-                  Book a Seat
-                </Typography>
-              </Box>
-              <Typography color="text.secondary">
-                Reserve your seat on the next available train. Choose from various classes and seating options.
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button
-                size="large"
-                variant="contained"
-                fullWidth
-                onClick={() => navigate('/book-seats')}
-              >
-                Book Now
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            borderRadius: 4,
+            bgcolor: 'background.paper',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          }}
+        >
+          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <EventSeatIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6" component="h2">
-                  View Available Seats
-                </Typography>
-              </Box>
-              <Typography color="text.secondary">
-                Check seat availability and choose your preferred seat for upcoming journeys.
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button
-                size="large"
-                variant="contained"
-                fullWidth
-                onClick={() => navigate('/book-seats')}
-              >
-                View Seats
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
+          {activeStep === 0 && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="From"
+                  name="from"
+                  value={formData.from}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                  }}
+                >
+                  {stations.map((station) => (
+                    <MenuItem key={station} value={station}>
+                      {station}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  select
+                  label="To"
+                  name="to"
+                  value={formData.to}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                  }}
+                >
+                  {stations.map((station) => (
+                    <MenuItem key={station} value={station}>
+                      {station}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Journey Date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    startAdornment: <CalendarIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Passengers"
+                  name="passengers"
+                  value={formData.passengers}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: <PeopleIcon sx={{ mr: 1, color: 'primary.main' }} />,
+                    inputProps: { min: 1, max: 10 },
+                  }}
+                />
+              </Grid>
+            </Grid>
+          )}
 
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <HistoryIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6" component="h2">
-                  My Bookings
-                </Typography>
-              </Box>
-              <Typography color="text.secondary">
-                View your booking history, manage existing reservations, and check upcoming journeys.
+          {activeStep === 1 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Available Trains
               </Typography>
-            </CardContent>
-            <CardActions>
-              <Button
-                size="large"
-                variant="contained"
-                fullWidth
-                onClick={() => navigate('/my-bookings')}
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+                {[1, 2, 3].map((train) => (
+                  <Grid item xs={12} md={4} key={train}>
+                    <MotionCard
+                      whileHover={{ scale: 1.02 }}
+                      sx={{ height: '100%' }}
+                    >
+                      <CardContent>
+                        <TrainIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
+                        <Typography variant="h6" gutterBottom>
+                          Train {train}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Departure: 08:00 AM
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Arrival: 02:00 PM
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Available Seats: 45
+                        </Typography>
+                      </CardContent>
+                    </MotionCard>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          )}
+
+          {activeStep === 2 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Confirm Your Booking
+              </Typography>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  mt: 3,
+                  borderRadius: 2,
+                  bgcolor: 'background.default',
+                }}
               >
-                View Bookings
+                <Typography variant="body1" gutterBottom>
+                  From: {formData.from}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  To: {formData.to}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  Date: {formData.date}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  Passengers: {formData.passengers}
+                </Typography>
+              </Paper>
+            </Box>
+          )}
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
+            {activeStep !== 0 && (
+              <Button onClick={handleBack} sx={{ mr: 1 }}>
+                Back
               </Button>
-            </CardActions>
-          </Card>
-        </Grid>
-      </Grid>
+            )}
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              disabled={!formData.from || !formData.to || !formData.date}
+            >
+              {activeStep === steps.length - 1 ? 'Book Now' : 'Next'}
+            </Button>
+          </Box>
+        </Paper>
+      </MotionBox>
     </Container>
   );
 };

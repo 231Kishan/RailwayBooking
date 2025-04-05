@@ -1,72 +1,108 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  Container,
   Box,
+  Container,
   Typography,
   TextField,
   Button,
   Link,
-  Alert,
   Paper,
+  InputAdornment,
+  IconButton,
+  Alert,
 } from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  PersonAdd as PersonAddIcon,
+} from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion(Box);
 
 const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const { register } = useAuth();
   const navigate = useNavigate();
+  const { register, error } = useAuth();
+  const [formData, setFormData] = useState({
+    username: '',
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
       return;
     }
-
-    const result = await register(name, email, password);
-    if (result.success) {
-      navigate('/login');
-    } else {
-      setError(result.error);
-    }
+    setLoading(true);
+    const result = await register(
+      formData.username,
+      formData.name,
+      formData.email,
+      formData.password,
+      navigate
+    );
+    setLoading(false);
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
+    <Container maxWidth="sm">
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        sx={{ py: 8 }}
       >
         <Paper
-          elevation={3}
+          elevation={0}
           sx={{
-            padding: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
+            p: 4,
+            borderRadius: 4,
+            bgcolor: 'background.paper',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
-            Create Account
-          </Typography>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <PersonAddIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
+            <Typography variant="h4" component="h1" gutterBottom>
+              Create Account
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Join us to book your train tickets
+            </Typography>
+          </Box>
+
           {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={formData.username}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
             <TextField
               margin="normal"
               required
@@ -75,9 +111,8 @@ const Register = () => {
               label="Full Name"
               name="name"
               autoComplete="name"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={handleChange}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -88,8 +123,8 @@ const Register = () => {
               label="Email Address"
               name="email"
               autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -98,11 +133,24 @@ const Register = () => {
               fullWidth
               name="password"
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -111,11 +159,10 @@ const Register = () => {
               fullWidth
               name="confirmPassword"
               label="Confirm Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="confirmPassword"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={formData.confirmPassword}
+              onChange={handleChange}
               sx={{ mb: 3 }}
             />
             <Button
@@ -123,18 +170,22 @@ const Register = () => {
               fullWidth
               variant="contained"
               size="large"
-              sx={{ mb: 2 }}
+              disabled={loading}
+              sx={{ mb: 3 }}
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
-              <Link component={RouterLink} to="/login" variant="body2">
-                Already have an account? Sign in
-              </Link>
+              <Typography variant="body2" color="text.secondary">
+                Already have an account?{' '}
+                <Link component={RouterLink} to="/login" color="primary">
+                  Sign in
+                </Link>
+              </Typography>
             </Box>
           </Box>
         </Paper>
-      </Box>
+      </MotionBox>
     </Container>
   );
 };

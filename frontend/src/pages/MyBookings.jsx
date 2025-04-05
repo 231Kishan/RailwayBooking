@@ -1,147 +1,203 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Container,
   Box,
+  Container,
   Typography,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
-  Alert,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
   Chip,
+  Divider,
+  Tabs,
+  Tab,
 } from '@mui/material';
-import axios from 'axios';
+import {
+  Train as TrainIcon,
+  Event as EventIcon,
+  LocationOn as LocationIcon,
+  Person as PersonIcon,
+  Receipt as ReceiptIcon,
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
+
+const MotionBox = motion(Box);
+const MotionCard = motion(Card);
 
 const MyBookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState(0);
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  // Mock data for bookings
+  const bookings = [
+    {
+      id: 1,
+      trainNumber: '12345',
+      from: 'Mumbai Central',
+      to: 'Delhi Junction',
+      date: '2024-03-15',
+      departureTime: '08:00 AM',
+      arrivalTime: '02:00 PM',
+      seats: ['A1', 'A2'],
+      status: 'confirmed',
+      price: 1000,
+    },
+    {
+      id: 2,
+      trainNumber: '67890',
+      from: 'Chennai Central',
+      to: 'Bangalore City',
+      date: '2024-03-20',
+      departureTime: '10:00 AM',
+      arrivalTime: '03:00 PM',
+      seats: ['B3'],
+      status: 'cancelled',
+      price: 500,
+    },
+  ];
 
-  const fetchBookings = async () => {
-    try {
-      const response = await axios.get('https://train-reservation-7aft.onrender.com/api/bookings/myBooking');
-      console.log("Booking data received:", response.data);
-      setBookings(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching bookings:", err);
-      setError('Failed to fetch bookings');
-      setLoading(false);
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed':
+        return 'success';
+      case 'cancelled':
+        return 'error';
+      case 'pending':
+        return 'warning';
+      default:
+        return 'default';
     }
   };
-
-  // Get current date to display if other date methods fail
-  const getCurrentDate = () => {
-    return new Date().toLocaleString();
-  };
-
-  // This function displays the booking date in a user-friendly format
-  const getBookingDate = (booking) => {
-    try {
-      // Try bookedAt first (from schema)
-      if (booking.bookedAt) {
-        const date = new Date(booking.bookedAt);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleString();
-        }
-      }
-      
-      // Try createdAt next (MongoDB might add this)
-      if (booking.createdAt) {
-        const date = new Date(booking.createdAt);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleString();
-        }
-      }
-      
-      // If booking has _id, extract timestamp from MongoDB ObjectId
-      if (booking._id) {
-        // MongoDB ObjectIDs contain a timestamp in the first 4 bytes
-        const timestamp = parseInt(booking._id.substring(0, 8), 16) * 1000;
-        const date = new Date(timestamp);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleString() + " (from ID)";
-        }
-      }
-      
-      // If all else fails, show current date with note
-      return getCurrentDate() + " (approximate)";
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return getCurrentDate() + " (fallback)";
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 4 }}>
+    <Container maxWidth="lg">
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        sx={{ py: 4 }}
+      >
         <Typography variant="h4" component="h1" gutterBottom>
           My Bookings
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-          View and manage your train seat bookings
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          View and manage your train reservations
         </Typography>
-      </Box>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {bookings.length === 0 ? (
-        <Paper elevation={3} sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary">
-            You haven't made any bookings yet.
-          </Typography>
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            bgcolor: 'background.paper',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Tab label="Upcoming" />
+            <Tab label="Past" />
+            <Tab label="Cancelled" />
+          </Tabs>
         </Paper>
-      ) : (
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Booking ID</TableCell>
-                <TableCell>Seat Number</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Booking Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow key={booking._id}>
-                  <TableCell>{booking._id}</TableCell>
-                  <TableCell>{booking.seat.seatNumber}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={booking.seat.isBooked ? 'Booked' : 'Available'}
-                      color={booking.seat.isBooked ? 'success' : 'default'}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {getBookingDate(booking)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+
+        <Grid container spacing={3}>
+          {bookings.map((booking) => (
+            <Grid item xs={12} key={booking.id}>
+              <MotionCard
+                whileHover={{ scale: 1.02 }}
+                sx={{
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      mb: 2,
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        Train #{booking.trainNumber}
+                      </Typography>
+                      <Chip
+                        label={booking.status.toUpperCase()}
+                        color={getStatusColor(booking.status)}
+                        size="small"
+                      />
+                    </Box>
+                    <Typography variant="h6" color="primary">
+                      ₹{booking.price}
+                    </Typography>
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>
+                          {booking.from} → {booking.to}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>{booking.date}</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <TrainIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>
+                          {booking.departureTime} - {booking.arrivalTime}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography>
+                          Seats: {booking.seats.join(', ')}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+                <Divider />
+                <CardActions sx={{ p: 2 }}>
+                  <Button
+                    startIcon={<ReceiptIcon />}
+                    variant="outlined"
+                    size="small"
+                  >
+                    View Ticket
+                  </Button>
+                  {booking.status === 'confirmed' && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      sx={{ ml: 1 }}
+                    >
+                      Cancel Booking
+                    </Button>
+                  )}
+                </CardActions>
+              </MotionCard>
+            </Grid>
+          ))}
+        </Grid>
+      </MotionBox>
     </Container>
   );
 };

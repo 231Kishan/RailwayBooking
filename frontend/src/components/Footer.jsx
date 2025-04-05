@@ -1,76 +1,109 @@
 import React from 'react';
-import { Box, Container, Grid, Typography, Link, Divider } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
-import TrainIcon from '@mui/icons-material/Train';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { Box, Container, Typography, Grid, Link, IconButton } from '@mui/material';
+import {
+  Facebook as FacebookIcon,
+  Twitter as TwitterIcon,
+  Instagram as InstagramIcon,
+  LinkedIn as LinkedInIcon,
+} from '@mui/icons-material';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
   return (
     <Box
+      component="footer"
       sx={{
-        bgcolor: 'primary.main',
-        color: 'white',
         py: 6,
+        px: 2,
         mt: 'auto',
+        backgroundColor: 'teal',
+        color: 'white',
       }}
     >
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <TrainIcon sx={{ mr: 1, fontSize: 30 }} />
-              <Typography variant="h6" component="div">
-                Train Reservation
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ mb: 2 }}>
-              Your trusted partner for hassle-free train seat bookings. Travel with comfort and convenience.
+            <Typography variant="h6" gutterBottom>
+              Train Reservation
             </Typography>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              Book your train tickets with ease and comfort. Experience the best in train travel.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton
+                sx={{ color: 'white', '&:hover': { color: 'primary.light' } }}
+                component="a"
+                href="#"
+              >
+                <FacebookIcon />
+              </IconButton>
+              <IconButton
+                sx={{ color: 'white', '&:hover': { color: 'primary.light' } }}
+                component="a"
+                href="#"
+              >
+                <TwitterIcon />
+              </IconButton>
+              <IconButton
+                sx={{ color: 'white', '&:hover': { color: 'primary.light' } }}
+                component="a"
+                href="#"
+              >
+                <InstagramIcon />
+              </IconButton>
+              <IconButton
+                sx={{ color: 'white', '&:hover': { color: 'primary.light' } }}
+                component="a"
+                href="#"
+              >
+                <LinkedInIcon />
+              </IconButton>
+            </Box>
           </Grid>
-
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" component="div" sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
               Quick Links
             </Typography>
-            <Link component={RouterLink} to="/" color="inherit" underline="hover" sx={{ display: 'block', mb: 1 }}>
-              Home
-            </Link>
-            <Link component={RouterLink} to="/book-seats" color="inherit" underline="hover" sx={{ display: 'block', mb: 1 }}>
-              Book Seats
-            </Link>
-            <Link component={RouterLink} to="/my-bookings" color="inherit" underline="hover" sx={{ display: 'block', mb: 1 }}>
-              My Bookings
-            </Link>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link href="/" color="inherit" underline="hover">
+                Home
+              </Link>
+              <Link href="/book-seats" color="inherit" underline="hover">
+                Book Tickets
+              </Link>
+              <Link href="/my-bookings" color="inherit" underline="hover">
+                My Bookings
+              </Link>
+              <Link href="/about" color="inherit" underline="hover">
+                About Us
+              </Link>
+            </Box>
           </Grid>
-
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" component="div" sx={{ mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
               Contact Us
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <PhoneIcon sx={{ mr: 1, fontSize: 'small' }} />
-              <Typography variant="body2">+1 (123) 456-7890</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <EmailIcon sx={{ mr: 1, fontSize: 'small' }} />
-              <Typography variant="body2">support@trainreservation.com</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <LocationOnIcon sx={{ mr: 1, fontSize: 'small' }} />
-              <Typography variant="body2">123 Station Road, City, Country</Typography>
-            </Box>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Email: support@trainreservation.com
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Phone: +91 1234567890
+            </Typography>
+            <Typography variant="body2">
+              Address: 123 Railway Station Road, Mumbai, India
+            </Typography>
           </Grid>
         </Grid>
-
-        <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.2)' }} />
-
-        <Box sx={{ textAlign: 'center' }}>
+        <Box
+          sx={{
+            mt: 4,
+            pt: 2,
+            borderTop: 1,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            textAlign: 'center',
+          }}
+        >
           <Typography variant="body2">
-            &copy; {currentYear} Train Reservation System. All rights reserved.
+            © {new Date().getFullYear()} Train Reservation. All rights reserved.
           </Typography>
         </Box>
       </Container>
