@@ -35,10 +35,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const register = async (username, name, email, password, navigate) => {
+  const register = async (name, email, password, navigate) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        username,
+      const response = await axios.post('https://railwaybooking.onrender.com/api/auth/register', {
         name,
         email,
         password,
@@ -50,14 +49,13 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const msg = err.response?.data?.msg || 'Registration failed';
       setError(msg);
-      alert(msg);
       return { success: false, error: msg };
     }
   };
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('https://railwaybooking.onrender.com/api/auth/login', {
         email,
         password,
       });
@@ -71,7 +69,6 @@ export const AuthProvider = ({ children }) => {
         setUser({ id: decoded.user.id });
       }
 
-      setError(null);
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.msg || 'Login failed';
@@ -86,17 +83,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const value = { user, loading, error, login, register, logout };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        register,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

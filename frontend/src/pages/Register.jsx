@@ -26,7 +26,6 @@ const Register = () => {
   const navigate = useNavigate();
   const { register, error } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
     name: '',
     email: '',
     password: '',
@@ -46,14 +45,11 @@ const Register = () => {
       return;
     }
     setLoading(true);
-    const result = await register(
-      formData.username,
-      formData.name,
-      formData.email,
-      formData.password,
-      navigate
-    );
+    const result = await register(formData.name, formData.email, formData.password, navigate);
     setLoading(false);
+    if (result.success) {
+      navigate('/login');
+    }
   };
 
   return (
@@ -62,24 +58,29 @@ const Register = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        sx={{ py: 8 }}
+        sx={{
+          minHeight: '80vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          py: 4,
+        }}
       >
         <Paper
           elevation={0}
           sx={{
-            p: 4,
+            p: { xs: 3, sm: 4 },
             borderRadius: 4,
             bgcolor: 'background.paper',
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <PersonAddIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
             <Typography variant="h4" component="h1" gutterBottom>
               Create Account
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Join us to book your train tickets
+              Sign up to start booking your train tickets
             </Typography>
           </Box>
 
@@ -89,60 +90,40 @@ const Register = () => {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit}>
             <TextField
-              margin="normal"
-              required
               fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
-              autoFocus
-              value={formData.username}
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="name"
               label="Full Name"
               name="name"
-              autoComplete="name"
               value={formData.name}
               onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
               margin="normal"
               required
+              autoFocus
+            />
+            <TextField
               fullWidth
-              id="email"
-              label="Email Address"
+              label="Email"
               name="email"
-              autoComplete="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
-              sx={{ mb: 2 }}
-            />
-            <TextField
               margin="normal"
               required
+            />
+            <TextField
               fullWidth
-              name="password"
               label="Password"
+              name="password"
               type={showPassword ? 'text' : 'password'}
-              id="password"
-              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
+              margin="normal"
+              required
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      aria-label="toggle password visibility"
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                     >
@@ -151,38 +132,37 @@ const Register = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
             />
             <TextField
-              margin="normal"
-              required
               fullWidth
-              name="confirmPassword"
               label="Confirm Password"
+              name="confirmPassword"
               type={showPassword ? 'text' : 'password'}
-              id="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              sx={{ mb: 3 }}
+              margin="normal"
+              required
             />
             <Button
-              type="submit"
               fullWidth
               variant="contained"
+              type="submit"
               size="large"
               disabled={loading}
-              sx={{ mb: 3 }}
+              startIcon={<PersonAddIcon />}
+              sx={{ mt: 3, mb: 2 }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                Already have an account?{' '}
-                <Link component={RouterLink} to="/login" color="primary">
-                  Sign in
-                </Link>
-              </Typography>
-            </Box>
+          </form>
+
+          <Box sx={{ textAlign: 'center', mt: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?{' '}
+              <Link component={RouterLink} to="/login" color="primary">
+                Sign in
+              </Link>
+            </Typography>
           </Box>
         </Paper>
       </MotionBox>
