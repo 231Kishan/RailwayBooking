@@ -3,25 +3,30 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Configure axios defaults
+  const api = axios.create({
+    baseURL: 'https://train-reservation-7aft.onrender.com/api',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    withCredentials: true
+  });
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Extract user details from token
         const decoded = JSON.parse(atob(token.split('.')[1]));
         if (decoded.user && decoded.user.id) {
           setUser({ id: decoded.user.id });
@@ -29,65 +34,68 @@ export const AuthProvider = ({ children }) => {
       } catch (err) {
         console.error('Error processing token:', err);
         localStorage.removeItem('token');
-        delete axios.defaults.headers.common['Authorization'];
+        delete api.defaults.headers.common['Authorization'];
       }
     }
+    
     setLoading(false);
   }, []);
 
+  // ✅ FIXED: register function should NOT store token or update user state
   const register = async (name, email, password, navigate) => {
     try {
-      const response = await axios.post('https://railwaybooking.onrender.com/api/auth/register', {
+      const response = await api.post('/auth/register', {
         name,
         email,
         password,
       });
 
       alert(response.data.msg || "Registration successful! Please login.");
-      navigate('/login');
       return { success: true };
+      navigate('/login'); // Redirect user to login page
+      
+     
     } catch (err) {
-      const msg = err.response?.data?.msg || 'Registration failed';
-      setError(msg);
-      return { success: false, error: msg };
+      setError(err.response?.data?.msg || 'Registration failed');
+      return { success: false, error: err.response?.data?.msg || 'Registration failed' };
     }
   };
 
+  // ✅ Login function remains unchanged
   const login = async (email, password) => {
     try {
-      const response = await axios.post('https://railwaybooking.onrender.com/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email,
         password,
       });
 
       const { token } = response.data;
       localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      if (decoded.user && decoded.user.id) {
-        setUser({ id: decoded.user.id });
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        if (decoded.user && decoded.user.id) {
+          setUser({ id: decoded.user.id });
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
       }
 
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.msg || 'Login failed';
-      setError(msg);
-      return { success: false, error: msg };
+      setError(err.response?.data?.msg || 'Login failed');
+      return { success: false, error: err.response?.data?.msg || 'Login failed' };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
   const value = { user, loading, error, login, register, logout };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

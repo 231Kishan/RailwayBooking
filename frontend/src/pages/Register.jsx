@@ -26,6 +26,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { register, error } = useAuth();
   const [formData, setFormData] = useState({
+    username: '',
     name: '',
     email: '',
     password: '',
@@ -45,7 +46,13 @@ const Register = () => {
       return;
     }
     setLoading(true);
-    const result = await register(formData.name, formData.email, formData.password, navigate);
+    const result = await register(
+      formData.username,
+      formData.name,
+      formData.email,
+      formData.password,
+      navigate
+    );
     setLoading(false);
     if (result.success) {
       navigate('/login');
@@ -72,7 +79,8 @@ const Register = () => {
             p: { xs: 3, sm: 4 },
             borderRadius: 4,
             bgcolor: 'background.paper',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            boxShadow:
+              '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -93,13 +101,21 @@ const Register = () => {
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
+              label="Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              margin="normal"
+              required
+            />
+            <TextField
+              fullWidth
               label="Full Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
               margin="normal"
               required
-              autoFocus
             />
             <TextField
               fullWidth
@@ -170,4 +186,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

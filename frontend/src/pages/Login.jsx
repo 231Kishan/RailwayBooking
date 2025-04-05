@@ -31,18 +31,33 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setFormError('All fields are required');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoading(true);
     const result = await login(formData.email, formData.password);
     setLoading(false);
+    
     if (result.success) {
       navigate('/');
+    } else {
+      setFormError(result.error);
     }
   };
 
@@ -78,9 +93,9 @@ const Login = () => {
             </Typography>
           </Box>
 
-          {error && (
+          {(error || formError) && (
             <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
+              {error || formError}
             </Alert>
           )}
 
@@ -95,6 +110,7 @@ const Login = () => {
               margin="normal"
               required
               autoFocus
+              error={!!formError}
             />
             <TextField
               fullWidth
@@ -105,6 +121,7 @@ const Login = () => {
               onChange={handleChange}
               margin="normal"
               required
+              error={!!formError}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
